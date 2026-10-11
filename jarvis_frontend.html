@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jarvis Protocol: Active</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="jarvis_style.css"> 
+    <style>/* style.css */
+
+:root {
+    /* Define your color palette for easy changes */
+    --bg-dark: #0a0a0a;
+    --bg-medium: #1a1a1a;
+    --border-glow: #00ffff; /* Cyan glow */
+    --text-primary: #e0f7fa; /* Light cyan/blue for general text */
+    --text-jarvis: #00ffff; /* Brighter cyan for Jarvis responses */
+    --text-user: #00ff00; /* Neon green for user input/messages */
+    --accent-red: #ff4500; /* Orange-red for alerts/accents */
+    --shadow-light: rgba(0, 255, 255, 0.3);
+    --shadow-medium: rgba(0, 255, 255, 0.6);
+}
+
+body {
+    font-family: 'Orbitron', sans-serif; /* A more impactful sci-fi font */
+    background-color: var(--bg-dark);
+    background-image: url('background_machinery.jpg'); /* Your main background image */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: var(--text-primary);
+    overflow: hidden;
+    position: relative; /* For absolutely positioned elements */
+}
+
+/* --- Core Container Styles --- */
+.container {
+    background-color: rgba(0, 0, 0, 0.85); /* Slightly transparent dark background */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 0 25px var(--shadow-medium), inset 0 0 10px var(--shadow-light); /* Stronger glow */
+    border: 2px solid var(--border-glow);
+    width: 90%;
+    max-width: 700px;
+    text-align: center;
+    position: relative;
+    z-index: 10; /* Ensure it's above background elements */
+    animation: fadeInScale 1s ease-out forwards; /* Initial animation */
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--text-jarvis);
+    text-shadow: 0 0 10px var(--text-jarvis);
+    margin-bottom: 25px;
+    letter-spacing: 2px;
+}
+
+/* --- Chat Window Styles --- */
+#chat-window {
+    height: 350px;
+    border: 1px solid #333;
+    background-color: rgba(10, 10, 10, 0.9);
+    overflow-y: auto;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    text-align: left;
+    color: var(--text-primary);
+    box-shadow: inset 0 0 5px rgba(0, 255, 255, 0.2);
+}
+
+/* Scrollbar styling */
+#chat-window::-webkit-scrollbar { width: 8px; }
+#chat-window::-webkit-scrollbar-track { background: var(--bg-medium); border-radius: 10px; }
+#chat-window::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 10px; border: 1px solid var(--bg-dark); }
+#chat-window::-webkit-scrollbar-thumb:hover { background: var(--text-jarvis); }
+
+.message {
+    margin-bottom: 12px;
+    line-height: 1.4;
+    position: relative;
+}
+.user-message { color: var(--text-user); }
+.jarvis-message { color: var(--text-jarvis); }
+
+/* --- Input Area Styles --- */
+#input-area {
+    display: flex;
+    gap: 10px;
+    align-items: center; /* Vertically align items */
+    margin-top: 20px;
+}
+
+#user-input {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 1px solid #555;
+    border-radius: 8px;
+    background-color: #333;
+    color: #fff;
+    font-size: 1.05em;
+    box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.2);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+#user-input:focus {
+    outline: none;
+    border-color: var(--text-user);
+    box-shadow: inset 0 0 8px rgba(0, 255, 0, 0.4), 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+#send-button, #mic-button {
+    padding: 12px 20px; /* Adjust padding for both buttons */
+    background-color: #007bff; /* Standard blue */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.0em; /* Slightly smaller font for consistency */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.4);
+}
+#send-button:hover, #mic-button:hover {
+    background-color: #0056b3;
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
+}
+#send-button:disabled, #mic-button:disabled {
+    background-color: #444;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+#mic-button {
+    background-color: var(--accent-red); /* Red for mic */
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.4);
+}
+#mic-button:hover {
+    background-color: #cc3700;
+    box-shadow: 0 0 15px rgba(255, 69, 0, 0.6);
+}
+#mic-button.recording {
+    background-color: #cc0000; /* Darker red when recording */
+    animation: pulse-mic 1s infinite alternate; /* Pulsing effect */
+    box-shadow: 0 0 20px #ff0000;
+}
+@keyframes pulse-mic {
+    0% { transform: scale(1); box-shadow: 0 0 10px #ff0000; }
+    100% { transform: scale(1.05); box-shadow: 0 0 25px #ff0000; }
+}
+
+
+/* --- Loading Indicator Styles --- */
+.loading-dots {
+    display: none;
+    font-size: 30px;
+    color: var(--text-jarvis);
+    margin-top: 15px;
+    letter-spacing: 5px;
+    text-shadow: 0 0 8px var(--text-jarvis);
+}
+.loading-dots span {
+    animation: blink 1.2s infinite;
+}
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.4s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.8s; }
+
+@keyframes blink {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* --- Robot/Machinery Visuals --- */
+.robot-head {
+    position: absolute;
+    top: -60px; /* Adjust position */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px; /* Size of your image */
+    height: 100px;
+    background-image: url('robot_head.gif'); /* Your robot head GIF/PNG */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 20; /* Above container border */
+    animation: floatUpDown 3s ease-in-out infinite alternate;
+}
+
+@keyframes floatUpDown {
+    0% { transform: translateX(-50%) translateY(0px); }
+    100% { transform: translateX(-50%) translateY(-10px); }
+}
+
+/* Background circuitry/animations - place these for visual depth */
+.circuit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('circuit_pattern.gif'); /* Your circuit pattern GIF/PNG */
+    background-size: cover; /* or 'contain' if it's a specific element */
+    opacity: 0.05; /* Very subtle */
+    z-index: 1;
+    pointer-events: none;
+    animation: subtleRotate 30s linear infinite; /* Example animation */
+}
+
+@keyframes subtleRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Loading Robot GIF */
+#loading-robot {
+    display: none; /* Hidden by default */
+    width: 80px; /* Adjust size */
+    height: 80px;
+    margin: 15px auto 0;
+    background-image: url('loading_robot.gif'); /* Your loading robot GIF */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.loading-dots.active + #loading-robot { /* Show when dots are active */
+    display: block;
+}
+
+/* --- System Status Display --- */
+.system-status {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(10, 255, 255, 0.1);
+    border: 1px solid var(--border-glow);
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    text-align: left;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 20;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #00ff00;
+    box-shadow: 0 0 5px #00ff00;
+    animation: status-pulse 1.5s infinite alternate;
+}
+@keyframes status-pulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0.7; }
+}
+.status-text { color: var(--text-primary); }
+
+/* Mic status indicator */
+#mic-status {
+    color: var(--text-user);
+    font-size: 0.9em;
+    margin-top: 10px;
+    display: none; /* Hidden by default */
+}
+#mic-status.active {
+    display: block;
+    animation: mic-activity 0.5s infinite alternate;
+}
+@keyframes mic-activity {
+    0% { opacity: 1; }
+    100% { opacity: 0.5; }
+}</style>
+</head>
+<body>
+    <div class="circuit-overlay"></div>
+
+    <div class="container">
+        <div class="system-status">
+            <div class="status-dot"></div>
+            <span class="status-text">SYSTEM: ONLINE | PROTOCOL: JARVIS</span>
+        </div>
+
+        <div class="robot-head"></div>
+
+        <h1>Jarvis AI Protocol</h1>
+        <div id="chat-window"></div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Initiate query...">
+            <button id="send-button">SEND</button>
+            <button id="mic-button"><i class="fas fa-microphone"></i> Mic</button>
+        </div>
+        <div id="mic-status">Listening...</div>
+        <div id="loading-indicator" class="loading-dots">
+            <span>.</span><span>.</span><span>.</span>
+        </div>
+        <div id="loading-robot"></div>
+    </div>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+    <script>
+        // Backend URL in one place for easy changes
+        const BACKEND_URL = "http://127.0.0.1:5100/chat";
+
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const micButton = document.getElementById('mic-button');
+        const micStatus = document.getElementById('mic-status');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const loadingRobot = document.getElementById('loading-robot');
+
+        // Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        let isRecording = false;
+
+        if (recognition) {
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                micButton.classList.add('recording');
+                micStatus.style.display = 'block';
+                micStatus.textContent = 'Listening...';
+                userInput.placeholder = 'Speak now...';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                sendMessage();
+            };
+
+            recognition.onerror = (event) => {
+                micStatus.textContent = `Error: ${event.error}`;
+                stopRecording();
+            };
+
+            recognition.onend = stopRecording;
+
+            micButton.addEventListener('click', () => {
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        micStatus.textContent = 'Microphone blocked or error.';
+                        micStatus.style.display = 'block';
+                    }
+                }
+            });
+
+            function stopRecording() {
+                isRecording = false;
+                micButton.classList.remove('recording');
+                micStatus.style.display = 'none';
+                userInput.placeholder = 'Initiate query...';
+            }
+        } else {
+            micButton.style.display = 'none';
+        }
+
+        function appendMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            messageElement.textContent = message;
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === "") return;
+
+            appendMessage('user', 'YOU: ' + message);
+            userInput.value = '';
+
+            loadingIndicator.style.display = 'block';
+            loadingRobot.style.display = 'block';
+            sendButton.disabled = true;
+            micButton.disabled = true;
+            if (isRecording) recognition.stop();
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    appendMessage('jarvis', 'JARVIS: ' + data.reply);
+                } else {
+                    appendMessage('jarvis', 'ERROR: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                appendMessage('jarvis', 'JARVIS: Backend is offline. Please start the server.');
+                console.error('Fetch error:', error);
+            } finally {
+                loadingIndicator.style.display = 'none';
+                loadingRobot.style.display = 'none';
+                sendButton.disabled = false;
+                micButton.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') sendMessage();
+        });
+
+        appendMessage('jarvis', 'JARVIS: Systems online. How may I assist you, sir?');
+    </script>
+</body>
+</html>
